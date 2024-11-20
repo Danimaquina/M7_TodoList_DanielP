@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Checkbox } from 'react-native-paper';
 
-export default function CreateTaskScreen({ route, addTask, navigation }) {
-  const { task, isEdit } = route.params || {}; // Obtenemos la tarea y el indicador de edición de los parámetros
+export default function CreateTaskScreen({ route, addTask, updateTask, navigation }) {
+  const { task, isEdit } = route.params || {};  // Obtenemos la tarea y el indicador de edición
 
-  const [title, setTitle] = useState(task?.title || ''); // Si estamos editando, ponemos el título de la tarea
-  const [date, setDate] = useState(new Date(task?.date || Date.now())); // Si estamos editando, ponemos la fecha de la tarea
+  const [title, setTitle] = useState(task?.title || '');  // Si estamos editando, ponemos el título de la tarea
+  const [date, setDate] = useState(new Date(task?.date || Date.now()));  // Si estamos editando, ponemos la fecha de la tarea
   const [showPicker, setShowPicker] = useState(false);
   const [isDateEnabled, setIsDateEnabled] = useState(task?.date !== 'No hay data');
 
@@ -17,34 +17,30 @@ export default function CreateTaskScreen({ route, addTask, navigation }) {
     setDate(currentDate);
   };
 
-  const handleSave = () => {
-    // Verificamos si el título está vacío
+  // En caso de que no haya titulo
+  const handleSave = async () => {
     if (!title.trim()) {
-      // Si el título está vacío, mostramos una alerta
-      Alert.alert('Error', 'El título de la tarea no puede estar vacío.');
-      return; // No continuamos con el guardado
+      alert("Por favor, ingrese un título para la tarea.");
+      return;
     }
 
-    // Verificampos si podemos poner una data
     const taskDate = isDateEnabled ? date.toISOString().split('T')[0] : 'No hay data';
 
     if (isEdit) {
-      // Si estamos editando, actualizamos la tarea en la lista
+      // Si estamos editando, actualizamos la tarea
       const updatedTask = {
-        ...task,
         title,
         date: taskDate,
       };
-      addTask(updatedTask); // Usamos la misma función para añadir la tarea (actualizada)
+      await updateTask(task.id, updatedTask); // Llamar a la función para actualizar
     } else {
       // Si estamos creando una nueva tarea
       const newTask = {
-        id: Date.now().toString(),
         title,
         date: taskDate,
         completed: false,
       };
-      addTask(newTask); // Añadimos la tarea
+      await addTask(newTask); // Llamar a la función para agregar la nueva tarea
     }
 
     navigation.goBack(); // Volver a la pantalla de lista de tareas
